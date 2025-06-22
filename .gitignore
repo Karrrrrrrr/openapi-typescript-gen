@@ -1,0 +1,9 @@
+
+
+dist
+api/*gen*.ts
+types/*gen*.ts
+.idea/*
+ignore
+node_modules
+
