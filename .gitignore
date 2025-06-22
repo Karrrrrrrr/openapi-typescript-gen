@@ -1,8 +1,8 @@
 
 
 dist
-api/*gen*.ts
-types/*gen*.ts
+src/api/*gen*.ts
+src/types/*gen*.ts
 .idea
 ignore
 node_modules
