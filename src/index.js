@@ -124,7 +124,11 @@ const genApi = () => {
             // console.log(method)
             const functionName = method['operationId']
             let paramsBody = ''
-            const { parameters = [], requestBody, responses } = method
+            const {
+                parameters = [],
+                requestBody,
+                responses,
+            } = method
             let query = ``
             let data = ``
             let headers = ``
@@ -184,7 +188,7 @@ const genApi = () => {
                 successResponseType = $refToType(response$Ref)
                 addGroupType(tag, successResponseType)
             }
-            const successResponseGeneric =`<${successResponseType}>`
+            const successResponseGeneric = `<${successResponseType}>`
 
 
             const funcBody = `
