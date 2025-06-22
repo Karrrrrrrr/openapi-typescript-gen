@@ -1,7 +1,6 @@
 import fs from 'fs'
 import { defaultFileContent } from './config.js'
 
-const data = JSON.parse(fs.readFileSync('./示例项目.openapi.json', 'utf-8'))
 const writeFile = (path, content) => {
     const split = path.split('/')
     const dir = split.filter((_, index) => index !== split.length - 1).join('/')
@@ -41,7 +40,7 @@ const getType = (options) => {
 
     return 'unknown'
 }
-const genType = () => {
+const genType = (data) => {
     let s = ''
     s += 'export type int = number\n\n'
     s += 'export type int64 = number\n\n'
@@ -100,7 +99,7 @@ const transformObjectKey = (name) => {
     return name
 }
 
-const genApi = () => {
+const genApi = (data) => {
     const groups = {}
     const groupImports = {}
     const addGroupType = (name, typeName) => {
@@ -215,9 +214,13 @@ export function ${functionName}(${paramsBody}) {
         writeFile(`./src/api/${key}-gen.ts`,
             defaultFileContent +
             `import type {\n` +
-            types + `\n} from '~types'\n` +
+            types + `\n` +
+            `} from '~types'\n` +
             groups[key])
     }
 }
-genType()
-genApi()
+
+
+const data = JSON.parse(fs.readFileSync('./示例项目.openapi.json', 'utf-8'))
+genType(data)
+genApi(data)
