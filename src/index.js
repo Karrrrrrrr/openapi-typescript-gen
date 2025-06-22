@@ -51,51 +51,50 @@ const genType = () => {
     s += 'export type time = string\n\n'
     // 用作dayjs的参数
     s += 'export type MaybeTime = time | Date | number | undefined | null\n\n'
-    for (let name in data.components.schemas) {
-        const originName = name
+    Object.entries(data.components.schemas).forEach(([name, schema]) => {
         name = name.replace(' ', '')
-        const schema = data.components.schemas[originName]
-        if (!schema) continue
+        if (!schema) return
         if (schema.type === 'string') {
             if (schema.enum) {
                 s += `export type ${name} = ${genEnums(schema.enum)}\n`
-                continue
+                return
             }
             s += `export type ${name} = string\n`
 
-            continue
+            return
         }
         // oneOf 暂定为any
         if (schema.oneOf) {
             s += `export type ${name} = any\n`
-            continue
+            return
         }
 
         const properties = schema.properties
-
-        const fields = []
-        for (let field in properties) {
-            fields.push({
+        const fields = properties ? Object.entries(properties).map(([field, type]) => {
+            return ({
                 name: field,
-                type: getType(properties[field]),
-                comment: properties[field].example ? `// ${properties[field].example}` : ''
+                type: getType(type),
+                comment: type.example ? `// ${type.example}` : ''
             })
-        }
+
+        }) : []
         const indent = '\t'
         const fieldString = fields.map(item => {
             return `${indent}${item.name}: ${item.type} ${item.comment}`
         }).join('\n')
-        const typeClass = `export type ${name} = {
+        const typeClass =
+            `export type ${name} = {
 ${fieldString}
 }
 
 `
         s += typeClass
-    }
+    })
     writeFile('./src/typing/gen.ts', s)
 }
 const transformObjectKey = (name) => {
-    if (/-/.test(name)) {
+    name = name.replace('"', '\\"').replace(`'`, `\\'`)
+    if (/[\-%()/\\ ~!@#$^&*\[\]{}|]/.test(name)) {
         return `'${name}'`
     }
     return name
@@ -113,7 +112,7 @@ const genApi = () => {
         const methods = data.paths[path]
         for (let methodName in methods) {
             const method = methods[methodName]
-            const tag = method.tags[0]
+            const tag = (method.tags || ['default'])[0]
             groups[tag] ||= ''
             let apiFile = groups[tag]
 
@@ -129,7 +128,7 @@ const genApi = () => {
                 const pathParams = parameters.filter(item => item.in === 'path')
                 const queryParams = parameters.filter(item => item.in === 'query')
                 const headerParams = parameters.filter(item => item.in === 'header')
-                const otherParams = parameters.filter(item => item.in !== 'path' && item.in !== 'query' && item.in !== 'header')
+                // const otherParams = parameters.filter(item => item.in !== 'path' && item.in !== 'query' && item.in !== 'header')
 
                 pathParams.forEach(item => {
                     paramsBody += `\t${transformObjectKey(item.name)}: ${getType(item.schema)},\n`
@@ -153,14 +152,14 @@ const genApi = () => {
                 if (query) {
                     paramsBody += `\tquery: {\n${query}\t},\n`
                 }
-                otherParams.forEach(item => {
-                    paramsBody += `\t${transformObjectKey(item.name)}: ${getType(item.schema)},\n`
-                    if (item.schema.$ref) {
-                        addGroupType(tag, $refToType(item.schema.$ref))
-                    }
-                })
+                // otherParams.forEach(item => {
+                //     paramsBody += `\t${transformObjectKey(item.name)}: ${getType(item.schema)},\n`
+                //     if (item.schema.$ref) {
+                //         addGroupType(tag, $refToType(item.schema.$ref))
+                //     }
+                // })
                 if (headers) {
-                    paramsBody += `\theaders: {\n${headers}\t},\n`
+                    paramsBody += `headers: {\n${headers}\t},\n`
                 }
             }
             if (requestBody) {
