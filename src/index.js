@@ -116,7 +116,7 @@ const genApi = () => {
             const description = method.description
             let functionComment = ''
             if (description) {
-                functionComment = description.split('\n').map(item=> `// ${item}`).join('\n')
+                functionComment = description.split('\n').map(item => `// ${item}`).join('\n')
             }
             groups[tag] ||= ''
             let apiFile = groups[tag]
@@ -124,7 +124,7 @@ const genApi = () => {
             // console.log(method)
             const functionName = method['operationId']
             let paramsBody = ''
-            const { parameters = [], requestBody } = method
+            const { parameters = [], requestBody, responses } = method
             let query = ``
             let data = ``
             let headers = ``
@@ -178,11 +178,19 @@ const genApi = () => {
                     paramsBody += `\tdata: {},\n`
                 }
             }
+            let successResponseType = 'any'
+            const response$Ref = responses?.['200']?.content?.['application/json']?.schema?.$ref
+            if (response$Ref) {
+                successResponseType = $refToType(response$Ref)
+                addGroupType(tag, successResponseType)
+            }
+            const successResponseGeneric =`<${successResponseType}>`
+
 
             const funcBody = `
 ${functionComment}
 export function ${functionName}(${paramsBody}) {
-    return request({
+    return request${successResponseGeneric}({
         url: \`${path.replace('{', '${ ').replace('}', ' }')}\`,
         method: '${methodName.toUpperCase()}',
         params${query ? ': query' : ': undefined'},
