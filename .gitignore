@@ -3,7 +3,7 @@
 dist
 api/*gen*.ts
 types/*gen*.ts
-.idea/*
+.idea
 ignore
 node_modules
 
