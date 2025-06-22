@@ -20,6 +20,7 @@ const genEnums = (enums) => {
         .join(' | ')
 }
 const $refToType = ($ref) => {
+    // 排除空格
     return $ref.replace('#/components/schemas/', '').replace('%20', '')
 }
 const getType = (options) => {
@@ -45,14 +46,16 @@ const genType = () => {
     s += 'export type int = number\n\n'
     s += 'export type int64 = number\n\n'
     s += 'export type float = number\n\n'
+    s += 'export type float64 = number\n\n'
     s += 'export type Time = string\n\n'
     s += 'export type time = string\n\n'
+    // 用作dayjs的参数
+    s += 'export type MaybeTime = time | Date | number | undefined | null\n\n'
     for (let name in data.components.schemas) {
         const originName = name
         name = name.replace(' ', '')
         const schema = data.components.schemas[originName]
         if (!schema) continue
-        // console.log(schema)
         if (schema.type === 'string') {
             if (schema.enum) {
                 s += `export type ${name} = ${genEnums(schema.enum)}\n`
@@ -62,9 +65,14 @@ const genType = () => {
 
             continue
         }
+        // oneOf 暂定为any
+        if (schema.oneOf) {
+            s += `export type ${name} = any\n`
+            continue
+        }
+
         const properties = schema.properties
 
-        // console.log(name, )
         const fields = []
         for (let field in properties) {
             fields.push({
@@ -84,7 +92,7 @@ ${fieldString}
 `
         s += typeClass
     }
-    writeFile('./src/types/types-gen.ts', s)
+    writeFile('./src/typing/gen.ts', s)
 }
 const transformObjectKey = (name) => {
     if (/-/.test(name)) {
@@ -116,7 +124,6 @@ const genApi = () => {
             let query = ``
             let data = ``
             let headers = ``
-            // console.log(parameters)
             if (parameters.length || requestBody) paramsBody += '\n'
             if (parameters.length) {
                 const pathParams = parameters.filter(item => item.in === 'path')
@@ -191,7 +198,7 @@ export function ${functionName}(${paramsBody}) {
         writeFile(`./src/api/${key}-gen.ts`,
             defaultFileContent +
             `import type {\n` +
-            types + `\n} from '@/types/types-gen.ts'\n` +
+            types + `\n} from '~types'\n` +
             groups[key])
     }
 }
