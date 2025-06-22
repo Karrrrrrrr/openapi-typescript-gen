@@ -113,6 +113,11 @@ const genApi = () => {
         for (let methodName in methods) {
             const method = methods[methodName]
             const tag = (method.tags || ['default'])[0]
+            const description = method.description
+            let functionComment = ''
+            if (description) {
+                functionComment = description.split('\n').map(item=> `// ${item}`).join('\n')
+            }
             groups[tag] ||= ''
             let apiFile = groups[tag]
 
@@ -175,6 +180,7 @@ const genApi = () => {
             }
 
             const funcBody = `
+${functionComment}
 export function ${functionName}(${paramsBody}) {
     return request({
         url: \`${path.replace('{', '${ ').replace('}', ' }')}\`,
