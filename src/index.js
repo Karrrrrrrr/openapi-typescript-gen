@@ -164,7 +164,7 @@ const genApi = () => {
                 //     }
                 // })
                 if (headers) {
-                    paramsBody += `headers: {\n${headers}\t},\n`
+                    paramsBody += `\theaders: {\n${headers}\t},\n`
                 }
             }
             if (requestBody) {
