@@ -6,4 +6,7 @@ src/types/*gen*.ts
 .idea
 ignore
 node_modules
+example/**/*gen.ts
 
+
+!*.gitkeep

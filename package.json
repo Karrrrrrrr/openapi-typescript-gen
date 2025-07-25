@@ -3,9 +3,9 @@
   "version": "1.0.0",
   "description": "",
   "type": "module",
-  "main": "src/index.js",
   "scripts": {
-    "main": "node src/index.js"
+    "v2": "node example/v2/index.js",
+    "v3": "node example/v3/index.js"
   },
   "private": true,
   "dependencies": {
